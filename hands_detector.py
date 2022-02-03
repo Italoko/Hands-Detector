@@ -1,6 +1,11 @@
 import cv2
+import numpy as np
 
 log_console = True #Show exceptions in terminal
+
+#For calc coordinates
+def Manhattan(p1,p2):
+    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) #|x1 – x2| + |y1 – y2|
 
 #Returns hands detected
 def hands_detector(mp_hands_instance, frame):
@@ -37,6 +42,21 @@ def get_hand_label(result_mp, hand):
     elif log_console:
         print("index out of range or hand not detected")
     return None
+
+#Returns hand side relative to screen
+def get_hand_side(hand,w, h):
+    wrist = get_landmark(hand,0)
+    coord_wrist = tuple(np.multiply(np.array((wrist[0],wrist[1])), [w,h]).astype(int))
+
+    dist_wrist_to_minborder = Manhattan(coord_wrist, (0, coord_wrist[1]))
+    dist_wrist_to_maxborder = Manhattan(coord_wrist, (w, coord_wrist[1]))
+
+    if dist_wrist_to_minborder < dist_wrist_to_maxborder:
+        return "Left"
+    elif dist_wrist_to_minborder > dist_wrist_to_maxborder:
+        return "Right"
+    else:
+        return "Center"
 
 #Returns the coordinates of a specific hand/finger point
 def get_landmark(hand, key):
